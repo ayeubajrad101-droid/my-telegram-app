@@ -3,222 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Bot App</title>
+    <title>Coin Miner & Task Bot</title>
     <!-- استدعاء مكتبة الإعلانات الرسمية -->
-    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+    <script src="https://sad.adsgram.ai/js/adsgram.min.js"></script>
     <style>
         body {
             background-color: #121212;
             color: #ffffff;
             font-family: Arial, sans-serif;
-            padding: 15px;
-            margin: 0;
-        }
-        .balance-container {
-            text-align: center;
-            margin-bottom: 20px;
-            background: #1e1e1e;
             padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #333;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
         }
-        .card {
+        .container {
             background: #1e1e1e;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid #333;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            width: 90%;
+            max-width: 400px;
         }
-        .btn {
-            background: #f59e0b;
-            color: #000000;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-        .btn-secondary {
-            background: #23160a;
-            color: #f59e0b;
-            border: 1px solid #5a3d28;
-        }
-        .ref-box {
-            background: #23160a;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            word-break: break-all;
-            border: 1px solid #5a3d28;
-            margin-top: 8px;
-            margin-bottom: 8px;
-        }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            background: #23160a;
-            color: #fff;
-            border: 1px solid #5a3d28;
-            border-radius: 8px;
-            margin-top: 8px;
+        h1 {
+            font-size: 22px;
             margin-bottom: 10px;
-            box-sizing: border-box;
+            color: #00ffcc;
+        }
+        .balance-box {
+            font-size: 20px;
+            margin: 20px 0;
+            background: #2c2c2c;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        button {
+            background-color: #00ffcc;
+            color: #121212;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        button:hover {
+            background-color: #00b386;
+            color: #ffffff;
+        }
+        #status {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #ffcc00;
         }
     </style>
 </head>
 <body>
 
-    <!-- قسم الرصيد -->
-    <div class="balance-container">
-        <div style="font-size: 14px; color: #9ca3af; margin-bottom: 5px;">رصيدك الحالي</div>
-        <div style="font-size: 24px; font-weight: bold; color: #f59e0b; margin-bottom: 5px;">
-            <span id="coins-bal">0</span> عملة 🪙
+    <div class="container">
+        <h1>Task & Coin Miner</h1>
+        <p>شاهد الإعلانات واحصل على عملات رقمية مجانية!</p>
+        
+        <div class="balance-box">
+            رصيدك: <span id="balance">0</span> عملة 🪙
         </div>
-        <div style="font-size: 16px; color: #4ade80;">
-            $<span id="usd-bal">0.00</span>
-        </div>
-    </div>
 
-    <!-- قسم الإعلانات -->
-    <div class="card">
-        <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px;">📺 مشاهدة الإعلانات</div>
-        <div style="font-size: 12px; color: #9ca3af; margin-bottom: 4px;">المتاحة في هذه الدفعة: <span id="ads-count">10</span> / 10</div>
-        <div style="font-size: 11px; color: #f59e0b; margin-bottom: 10px;">إجمالي المتبقي اليوم: <span id="daily-ads-count">70</span> / 70 إعلان</div>
-        <button class="btn" id="watch-ad-btn">شاهد إعلان لكسب عملات أكثر 🪙</button>
-    </div>
-
-    <!-- قسم تحويل العملات -->
-    <div class="card">
-        <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px;">🔄 تحويل العملات</div>
-        <div style="font-size: 12px; color: #9ca3af; margin-bottom: 10px;">كل 4000 عملة = $0.04</div>
-        <button class="btn btn-secondary" id="convert-btn">تحويل إلى دولار ($)</button>
-    </div>
-
-    <!-- قسم سحب الأرباح -->
-    <div class="card">
-        <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px;">💳 سحب الأرباح</div>
-        <div style="font-size: 12px; color: #9ca3af; margin-bottom: 5px;">اختر طريقة السحب المفضلة</div>
-        <select id="withdraw-method">
-            <option value="binance">منصة باينانس (Binance ID)</option>
-            <option value="bybit">منصة بايبيت (Bybit UID)</option>
-            <option value="aptos">شبكة أبتوس (Aptos Wallet Address)</option>
-        </select>
-        <input type="text" id="withdraw-address" placeholder="أدخل معرف الحساب أو العنوان هنا...">
-        <button class="btn btn-secondary" id="withdraw-btn">طلب سحب الأرباح</button>
-    </div>
-
-    <!-- قسم الإحالات -->
-    <div class="card">
-        <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px;">👥 نظام الإحالات</div>
-        <div style="font-size: 12px; color: #9ca3af;">اربح $0.04 لكل صديق يدخل عبر رابطك!</div>
-        <div class="ref-box" id="ref-link">https://t.me/TaskBot?start=ref12345</div>
-        <button class="btn btn-secondary" id="copy-btn">نسخ رابط الإحالة</button>
+        <!-- زر مشاهدة الإعلان -->
+        <button onclick="showRewardedAd()">مشاهدة إعلان وكسب 10 عملات 📺</button>
+        
+        <div id="status"></div>
     </div>
 
     <script>
-        // تدمير الذاكرة المؤقتة القديمة قسراً لمنع تكرار المشكلة
-        localStorage.removeItem('saved_batch');
-        localStorage.removeItem('batch_time');
+        // المتغيرات الأساسية
+        let userBalance = localStorage.getItem('user_balance') ? parseInt(localStorage.getItem('user_balance')) : 0;
+        document.getElementById('balance').innerText = userBalance;
 
-        let coins = parseInt(localStorage.getItem('saved_coins')) || 0;
-        let dollars = parseFloat(localStorage.getItem('saved_dollars')) || 0.00;
-        let dailyAdsLeft = localStorage.getItem('saved_daily') !== null ? parseInt(localStorage.getItem('saved_daily')) : 70;
-        let adsLeftInBatch = 10; // اجبار العداد على البدء بـ 10 دائماً
+        // تهيئة إعلانات Adsgram بالـ Block ID الصحيح
+        const adController = window.Adsgram.init({ blockId: "41505" });
 
-        let AdController = null;
-        try {
-            if (window.Adsgram && typeof window.Adsgram.init === 'function') {
-                AdController = window.Adsgram.init({ blockId: "41463" });
-            }
-        } catch (e) {
-            console.log("Adsgram init error:", e);
+        // دالة عرض الإعلان عند الضغط على الزر
+        function showRewardedAd() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerText = "جاري تحميل الإعلان...";
+
+            adController.show()
+                .then((result) => {
+                    // نجاح مشاهدة الإعلان بالكامل
+                    userBalance += 10;
+                    localStorage.setItem('user_balance', userBalance);
+                    document.getElementById('balance').innerText = userBalance;
+                    statusDiv.innerText = "🎉 مبروك! تمت إضافة 10 عملات لرصيدك.";
+                    console.log("Ad watched successfully", result);
+                })
+                .catch((err) => {
+                    // إلغاء الإعلان أو خطأ في التحميل
+                    statusDiv.innerText = "⚠️ لم تقم بمشاهدة الإعلان كاملًا.";
+                    console.log("Ad was closed or failed", err);
+                });
         }
-
-        function updateUI() {
-            document.getElementById('coins-bal').innerText = coins;
-            document.getElementById('usd-bal').innerText = dollars.toFixed(2);
-            document.getElementById('ads-count').innerText = adsLeftInBatch;
-            document.getElementById('daily-ads-count').innerText = dailyAdsLeft;
-
-            localStorage.setItem('saved_coins', coins);
-            localStorage.setItem('saved_dollars', dollars);
-            localStorage.setItem('saved_daily', dailyAdsLeft);
-        }
-
-        updateUI();
-
-        document.getElementById("watch-ad-btn").addEventListener("click", () => {
-            if (dailyAdsLeft <= 0) {
-                alert("لقد استنفدت الحد الأقصى (70 إعلاناً) لهذا اليوم.");
-                return;
-            }
-
-            if (!AdController) {
-                alert("خطأ في تحميل نظام الإعلانات. تأكد من فتح التطبيق عبر تيليجرام.");
-                return;
-            }
-
-            AdController.show().then((result) => {
-                adsLeftInBatch--;
-                dailyAdsLeft--;
-                coins += 400;
-                
-                if (adsLeftInBatch <= 0) {
-                    adsLeftInBatch = 10; // إعادة تعيين تلقائية
-                }
-                
-                updateUI();
-                alert("ممتاز! تم تأكيد مشاهدة الإعلان وحصلت على 400 عملة 🪙.");
-            }).catch((error) => {
-                alert("تعذر عرض الإعلان: تأكد من عدم وجود مانع إعلانات أو ضعفه في المتصفح.");
-                console.log("Ad error:", error);
-            });
-        });
-
-        document.getElementById("convert-btn").addEventListener("click", () => {
-            if (coins < 4000) {
-                alert("رصيدك غير كافي! تحتاج إلى 4000 عملة على الأقل للتحويل.");
-                return;
-            }
-            let multiplier = Math.floor(coins / 4000);
-            let addedUsd = multiplier * 0.04;
-            coins -= multiplier * 4000;
-            dollars += addedUsd;
-            updateUI();
-            alert("تم تحويل العملات إلى دولار بنجاح!");
-        });
-
-        document.getElementById("withdraw-btn").addEventListener("click", () => {
-            const method = document.getElementById('withdraw-method').value;
-            const address = document.getElementById('withdraw-address').value.trim();
-            
-            if (!address) {
-                alert("الرجاء إدخال معرف الحساب أو العنوان أولاً.");
-                return;
-            }
-            if (dollars < 0.08) {
-                alert("رصيدك من الدولار غير كافي للسحب حالياً (الحد الأدنى $0.08).");
-                return;
-            }
-
-            alert("تم إرسال طلب السحب بنجاح عبر " + method + "!");
-            dollars = 0.00;
-            document.getElementById('withdraw-address').value = "";
-            updateUI();
-        });
-
-        document.getElementById("copy-btn").addEventListener("click", () => {
-            const linkText = document.getElementById('ref-link').innerText;
-            navigator.clipboard.writeText(linkText).then(() => {
-                alert("تم نسخ رابط الإحالة بنجاح!");
-            }).catch(() => {
-                alert("تعذر النسخ التلقائي.");
-            });
-        });
     </script>
 </body>
-                                                                                                     </html>
-                                                                              
+</html>
