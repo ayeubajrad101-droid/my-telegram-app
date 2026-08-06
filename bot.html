@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin Miner</title>
+    <script src="https://sad.adsgram.ai/js/adsgram.min.js"></script>
+    <style>
+        body { background-color: #121212; color: #fff; font-family: Arial, sans-serif; text-align: center; padding-top: 100px; }
+        .box { background: #1e1e1e; padding: 20px; border-radius: 10px; display: inline-block; width: 80%; max-width: 350px; }
+        button { background: #00ffcc; color: #121212; border: none; padding: 12px; font-weight: bold; border-radius: 8px; width: 100%; margin-top: 15px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h3>رصيدك: <span id="balance">0</span> 🪙</h3>
+        <button onclick="showRewardedAd()">مشاهدة إعلان وكسب 10 عملات 📺</button>
+        <p id="status" style="color: #ffcc00; margin-top: 10px;"></p>
+    </div>
+
+    <script>
+        let balance = localStorage.getItem('bal') ? parseInt(localStorage.getItem('bal')) : 0;
+        document.getElementById('balance').innerText = balance;
+
+        // الكود المحدث بالرقم الصحيح والنشط 41505
+        const adController = window.Adsgram.init({ blockId: "41505" });
+
+        function showRewardedAd() {
+            document.getElementById('status').innerText = "جاري التحميل...";
+            adController.show()
+                .then(() => {
+                    balance += 10;
+                    localStorage.setItem('bal', balance);
+                    document.getElementById('balance').innerText = balance;
+                    document.getElementById('status').innerText = "تمت إضافة 10 عملات بنجاح!";
+                })
+                .catch((err) => {
+                    document.getElementById('status').innerText = "تم إغلاق الإعلان أو حدث خطأ.";
+                    console.error(err);
+                });
+        }
+    </script>
+</body>
+</html>
