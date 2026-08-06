@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Coin Miner App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script type='text/javascript' src='//pl30621564.highcpmrate.com/30/62/15/30621564.js'></script>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            padding: 15px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container { width: 100%; max-width: 400px; }
+        .card {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        h3 { margin: 0 0 10px 0; color: #ffcc00; font-size: 18px; }
+        .balance-num { font-size: 22px; color: #00ffcc; font-weight: bold; }
+        .dollar-num { font-size: 22px; color: #00ffcc; font-weight: bold; margin-top: 5px; }
+        button {
+            background-color: #00ffcc;
+            color: #121212;
+            border: none;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:disabled { background-color: #555; color: #aaa; cursor: not-allowed; }
+        .btn-secondary { background-color: #2c2c2c; color: #ffffff; border: 1px solid #444; }
+        select, input {
+            width: 100%;
+            padding: 10px;
+            background: #2c2c2c;
+            color: #fff;
+            border: 1px solid #444;
+            border-radius: 8px;
+            margin-top: 8px;
+            box-sizing: border-box;
+        }
+        #status { margin-top: 10px; font-size: 13px; color: #00ffcc; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- رصيد العملات الحالي -->
+        <div class="card">
+            <h3>رصيد العملات الحالي</h3>
+            <div class="balance-num"><span id="coinBalance">1200</span> عملة 🪙</div>
+            <button class="btn-secondary" onclick="convertToDollar()">تحويل العملات إلى دولار ($) 🔄</button>
+        </div>
+
+        <!-- رصيد الدولار -->
+        <div class="card">
+            <h3>رصيد الدولار الجاهز للسحب</h3>
+            <div class="dollar-num">$<span id="dollarBalance">0.00</span></div>
+        </div>
+
+        <!-- مشاهدة الإعلانات مع العداد -->
+        <div class="card">
+            <button id="adBtn" onclick="watchAd()">مشاهدة إعلان وكسب 400 عملة 📺</button>
+            <div id="status">النظام متصل وجاهز للربح</div>
+        </div>
+
+        <!-- سحب الأرباح -->
+        <div class="card">
+            <h3>💳 سحب الأرباح (الحد الأدنى 0.08$)</h3>
+            <select><option>منصة باينانس (Binance ID)</option></select>
+            <input type="text" id="binanceId" placeholder="أدخل معرف باينانس الخاص بك">
+            <button class="btn-secondary" style="margin-top: 12px;" onclick="requestWithdrawal()">طلب السحب وإرسال للمشرف</button>
+        </div>
+    </div>
+
+    <script>
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+        }
+
+        let coinBalance = localStorage.getItem('coin_balance') ? parseInt(localStorage.getItem('coin_balance')) : 1200;
+        let dollarBalance = localStorage.getItem('dollar_balance') ? parseFloat(localStorage.getItem('dollar_balance')) : 0.00;
+        let isWatching = false;
+        
+        updateUI();
+
+        function updateUI() {
+            document.getElementById('coinBalance').innerText = coinBalance;
+            document.getElementById('dollarBalance').innerText = dollarBalance.toFixed(2);
+        }
+
+        function watchAd() {
+            if (isWatching) return;
+
+            let adLogs = JSON.parse(localStorage.getItem('ad_logs') || '[]');
+            const now = Date.now();
+            adLogs = adLogs.filter(time => now - time < 3600000);
+            
+            if (adLogs.length >= 10) {
+                const oldestAd = adLogs[0];
+                const remainingMinutes = Math.ceil((3600000 - (now - oldestAd)) / 60000);
+                const statusDiv = document.getElementById('status');
+                statusDiv.style.color = "#ffcc00";
+                statusDiv.innerText = `⚠️ وصلت للحد الأقصى (10 إعلانات). انتظر ${remainingMinutes} دقيقة.`;
+                return;
+            }
+
+            isWatching = true;
+            const adBtn = document.getElementById('adBtn');
+            const statusDiv = document.getElementById('status');
+            adBtn.disabled = true;
+            
+            let countdown = 10;
+            statusDiv.style.color = "#00ffcc";
+            statusDiv.innerText = `⏳ يرجى الانتظار، يتم تحميل الإعلان... (${countdown} ثوانٍ)`;
+
+            let timer = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    statusDiv.innerText = `⏳ يرجى مشاهدة الإعلان وعدم الخروج... متبقي ${countdown} ثوانٍ`;
+                } else {
+                    clearInterval(timer);
+                    
+                    window.open('https://www.highcpmrate.com/30621564', '_blank');
+
+                    coinBalance += 400;
+                    localStorage.setItem('coin_balance', coinBalance);
+                    adLogs.push(now);
+                    localStorage.setItem('ad_logs', JSON.stringify(adLogs));
+                    updateUI();
+                    
+                    statusDiv.style.color = "#00ffcc";
+                    statusDiv.innerText = `🎉 مبروك! تمت إضافة 400 عملة لرصيدك بنجاح.`;
+                    
+                    adBtn.disabled = false;
+                    isWatching = false;
+                }
+            }, 1000);
+        }
+
+        function convertToDollar() {
+            if (coinBalance <= 0) {
+                alert("ليس لديك أي عملات لتحويلها!");
+                return;
+            }
+            
+            let addedDollars = coinBalance / 100000;
+            dollarBalance += addedDollars;
+            coinBalance = 0;
+            
+            localStorage.setItem('coin_balance', coinBalance);
+            localStorage.setItem('dollar_balance', dollarBalance);
+            updateUI();
+            alert("تم تحويل العملات بنجاح إلى رصيد الدولار ($)!");
+        }
+
+        function requestWithdrawal() {
+            const binanceId = document.getElementById('binanceId').value.trim();
+            if (!binanceId) {
+                alert("الرجاء إدخال معرف باينانس (Binance ID) أولاً!");
+                return;
+            }
+            
+            if (dollarBalance < 0.08) {
+                alert("عذراً، الحد الأدنى للسحب هو 0.08$! رصيدك الحالي: $" + dollarBalance.toFixed(2));
+                return;
+            }
+
+            let message = `🔔 طلب سحب أرباح جديد!\n\n👤 معرف باينانس: ${binanceId}\n💰 المبلغ المطلوب: $${dollarBalance.toFixed(2)}`;
+            let telegramUrl = `https://t.me/CoinMinerApp_bot?text=` + encodeURIComponent(message);
+            
+            dollarBalance = 0;
+            localStorage.setItem('dollar_balance', dollarBalance);
+            updateUI();
+
+            window.open(telegramUrl, '_blank');
+        }
+    </script>
+</body>
+  </html>
+                                       
