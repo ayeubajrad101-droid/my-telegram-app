@@ -119,21 +119,14 @@
     </div>
 
     <script>
-        // تنظيف البيانات القديمة العالقة لضمان عمل العداد بانتظام
-        if (localStorage.getItem('app_version') !== 'v3') {
-            localStorage.clear();
-            localStorage.setItem('app_version', 'v3');
-        }
+        // تدمير الذاكرة المؤقتة القديمة قسراً لمنع تكرار المشكلة
+        localStorage.removeItem('saved_batch');
+        localStorage.removeItem('batch_time');
 
         let coins = parseInt(localStorage.getItem('saved_coins')) || 0;
         let dollars = parseFloat(localStorage.getItem('saved_dollars')) || 0.00;
         let dailyAdsLeft = localStorage.getItem('saved_daily') !== null ? parseInt(localStorage.getItem('saved_daily')) : 70;
-        let adsLeftInBatch = localStorage.getItem('saved_batch') !== null ? parseInt(localStorage.getItem('saved_batch')) : 10;
-
-        // التأكد من أن العداد لا ينزل تحت الصفر أبداً
-        if (adsLeftInBatch <= 0) {
-            adsLeftInBatch = 10;
-        }
+        let adsLeftInBatch = 10; // اجبار العداد على البدء بـ 10 دائماً
 
         let AdController = null;
         try {
@@ -152,24 +145,19 @@
 
             localStorage.setItem('saved_coins', coins);
             localStorage.setItem('saved_dollars', dollars);
-            localStorage.setItem('saved_batch', adsLeftInBatch);
             localStorage.setItem('saved_daily', dailyAdsLeft);
         }
 
         updateUI();
 
         document.getElementById("watch-ad-btn").addEventListener("click", () => {
-            if (adsLeftInBatch <= 0) {
-                adsLeftInBatch = 10;
-            }
-
             if (dailyAdsLeft <= 0) {
                 alert("لقد استنفدت الحد الأقصى (70 إعلاناً) لهذا اليوم.");
                 return;
             }
 
             if (!AdController) {
-                alert("خطأ في تحميل نظام الإعلانات. تأكد من فتح التطبيق عبر تيليجرام وتأكد من عدم استخدام مانع إعلانات.");
+                alert("خطأ في تحميل نظام الإعلانات. تأكد من فتح التطبيق عبر تيليجرام.");
                 return;
             }
 
@@ -179,13 +167,13 @@
                 coins += 400;
                 
                 if (adsLeftInBatch <= 0) {
-                    adsLeftInBatch = 10; // إعادة تعيين فورية للدفعة لتجنب أي تعليق
+                    adsLeftInBatch = 10; // إعادة تعيين تلقائية
                 }
                 
                 updateUI();
                 alert("ممتاز! تم تأكيد مشاهدة الإعلان وحصلت على 400 عملة 🪙.");
             }).catch((error) => {
-                alert("تعذر عرض الإعلان: قد يكون بسبب مانع إعلانات في المتصفح أو عدم توفر إعلانات حالياً.");
+                alert("تعذر عرض الإعلان: تأكد من عدم وجود مانع إعلانات أو ضعفه في المتصفح.");
                 console.log("Ad error:", error);
             });
         });
@@ -232,4 +220,5 @@
         });
     </script>
 </body>
-</html>
+                                                                                                     </html>
+                                                                              
