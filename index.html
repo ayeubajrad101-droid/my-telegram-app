@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+            <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -91,62 +91,47 @@
             document.getElementById('dollar').innerText = dollars;
         }
 
-        let adController = null;
-
-        function initAd() {
-            if (window.Adsgram && typeof window.Adsgram.init === 'function') {
-                try {
-                    adController = window.Adsgram.init({ blockId: "41505" });
-                } catch (e) {
-                    console.error("Adsgram init error:", e);
-                }
-            }
-        }
-
-        // محاولة التهيئة فوراً وبعد تحميل الصفحة
-        initAd();
-        window.addEventListener('load', initAd);
-
         function showRewardedAd() {
             const statusDiv = document.getElementById('status');
             
             // التحقق من الحد الأقصى (10 إعلانات في الساعة)
             let adLogs = JSON.parse(localStorage.getItem('ad_logs') || '[]');
             const now = Date.now();
-            adLogs = adLogs.filter(time => now - time < 3600000); // تصفية آخر ساعة
+            adLogs = adLogs.filter(time => now - time < 3600000);
             localStorage.setItem('ad_logs', JSON.stringify(adLogs));
 
             if (adLogs.length >= 10) {
-                statusDiv.innerText = "⚠️ لقد وصلت للحد الأقصى (10 إعلانات في الساعة). انتظر قليلاً.";
+                statusDiv.innerText = "⚠️ لقد وصلت للحد الأقصى (10 إعلانات في الساعة).";
                 return;
             }
 
             statusDiv.innerText = "جاري تحميل الإعلان...";
 
-            if (!adController) {
-                initAd();
-            }
-
-            if (!adController) {
-                statusDiv.innerText = "⚠️ جاري ربط الشبكة الإعلانية، أعد المحاولة بعد ثانية...";
-                setTimeout(initAd, 500);
+            // التحقق من تحميل مكتبة الإعلانات
+            if (typeof window.Adsgram === 'undefined' || typeof window.Adsgram.init !== 'function') {
+                statusDiv.innerText = "⚠️ لم يتم تحميل مكتبة الإعلانات، تحقق من اتصال الإنترنت.";
                 return;
             }
 
-            adController.show()
-                .then(() => {
-                    // تسجيل مشاهدة ناجحة وإضافة 400 عملة
-                    adLogs.push(Date.now());
-                    localStorage.setItem('ad_logs', JSON.stringify(adLogs));
+            try {
+                // تهيئة وتشغيل الإعلان مباشرة عند الضغط
+                const adController = window.Adsgram.init({ blockId: "41505" });
+                adController.show()
+                    .then(() => {
+                        adLogs.push(Date.now());
+                        localStorage.setItem('ad_logs', JSON.stringify(adLogs));
 
-                    userBalance += 400;
-                    localStorage.setItem('user_balance', userBalance);
-                    updateUI();
-                    statusDiv.innerText = "🎉 مبروك! تمت إضافة 400 عملة لرصيدك.";
-                })
-                .catch((err) => {
-                    statusDiv.innerText = "⚠️ تم إغلاق الإعلان أو لم يتم إكماله كاملاً.";
-                });
+                        userBalance += 400;
+                        localStorage.setItem('user_balance', userBalance);
+                        updateUI();
+                        statusDiv.innerText = "🎉 مبروك! تمت إضافة 400 عملة لرصيدك.";
+                    })
+                    .catch((err) => {
+                        statusDiv.innerText = "⚠️ تم إغلاق الإعلان أو لم يتم إكماله كاملاً.";
+                    });
+            } catch (e) {
+                statusDiv.innerText = "⚠️ خطأ في تشغيل الإعلان.";
+            }
         }
 
         function convertToDollar() {
