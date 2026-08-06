@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- أوامر منع التخزين المؤقت لكي لا يظهر الكود القديم أبداً -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Coin Miner & Task Bot</title>
     <!-- استدعاء مكتبة الإعلانات الرسمية -->
     <script src="https://sad.adsgram.ai/js/adsgram.min.js"></script>
@@ -51,14 +55,6 @@
             cursor: pointer;
             width: 100%;
             margin-top: 10px;
-            transition: 0.3s;
-        }
-        button:active {
-            transform: scale(0.98);
-        }
-        button:hover {
-            background-color: #00b386;
-            color: #ffffff;
         }
         #status {
             margin-top: 15px;
@@ -71,7 +67,6 @@
 
     <div class="container">
         <h1>Task & Coin Miner</h1>
-        <p>شاهد الإعلانات واحصل على عملات رقمية مجانية!</p>
         
         <div class="balance-box">
             رصيدك: <span id="balance">0</span> عملة 🪙
@@ -84,33 +79,28 @@
     </div>
 
     <script>
-        // المتغيرات الأساسية
         let userBalance = localStorage.getItem('user_balance') ? parseInt(localStorage.getItem('user_balance')) : 0;
         document.getElementById('balance').innerText = userBalance;
 
-        // تهيئة إعلانات Adsgram بالـ Block ID الصحيح
+        // تهيئة إعلانات Adsgram بالرقم الصحيح النشط 41505
         const adController = window.Adsgram.init({ blockId: "41505" });
 
-        // دالة عرض الإعلان عند الضغط على الزر
         function showRewardedAd() {
             const statusDiv = document.getElementById('status');
             statusDiv.innerText = "جاري تحميل الإعلان...";
 
             adController.show()
                 .then((result) => {
-                    // نجاح مشاهدة الإعلان بالكامل
                     userBalance += 10;
                     localStorage.setItem('user_balance', userBalance);
                     document.getElementById('balance').innerText = userBalance;
                     statusDiv.innerText = "🎉 مبروك! تمت إضافة 10 عملات لرصيدك.";
-                    console.log("Ad watched successfully", result);
                 })
                 .catch((err) => {
-                    // إلغاء الإعلان أو خطأ في التحميل
                     statusDiv.innerText = "⚠️ لم تقم بمشاهدة الإعلان كاملًا.";
-                    console.log("Ad was closed or failed", err);
                 });
         }
     </script>
 </body>
 </html>
+
