@@ -119,14 +119,21 @@
     </div>
 
     <script>
+        // تنظيف البيانات القديمة العالقة لضمان عمل العداد بانتظام
+        if (localStorage.getItem('app_version') !== 'v3') {
+            localStorage.clear();
+            localStorage.setItem('app_version', 'v3');
+        }
+
         let coins = parseInt(localStorage.getItem('saved_coins')) || 0;
         let dollars = parseFloat(localStorage.getItem('saved_dollars')) || 0.00;
         let dailyAdsLeft = localStorage.getItem('saved_daily') !== null ? parseInt(localStorage.getItem('saved_daily')) : 70;
+        let adsLeftInBatch = localStorage.getItem('saved_batch') !== null ? parseInt(localStorage.getItem('saved_batch')) : 10;
 
-        // إعادة تعيين العداد فوراً للتجربة بدون انتظار
-        let adsLeftInBatch = 10;
-        localStorage.setItem('saved_batch', 10);
-        localStorage.removeItem('batch_time');
+        // التأكد من أن العداد لا ينزل تحت الصفر أبداً
+        if (adsLeftInBatch <= 0) {
+            adsLeftInBatch = 10;
+        }
 
         let AdController = null;
         try {
@@ -162,7 +169,7 @@
             }
 
             if (!AdController) {
-                alert("خطأ في تحميل نظام الإعلانات. تأكد من فتح التطبيق عبر تيليجرام بشكل صحيح.");
+                alert("خطأ في تحميل نظام الإعلانات. تأكد من فتح التطبيق عبر تيليجرام وتأكد من عدم استخدام مانع إعلانات.");
                 return;
             }
 
@@ -171,10 +178,14 @@
                 dailyAdsLeft--;
                 coins += 400;
                 
+                if (adsLeftInBatch <= 0) {
+                    adsLeftInBatch = 10; // إعادة تعيين فورية للدفعة لتجنب أي تعليق
+                }
+                
                 updateUI();
                 alert("ممتاز! تم تأكيد مشاهدة الإعلان وحصلت على 400 عملة 🪙.");
             }).catch((error) => {
-                alert("لم يتم إكمال الإعلان أو تم إغلاقه قبل النهاية.");
+                alert("تعذر عرض الإعلان: قد يكون بسبب مانع إعلانات في المتصفح أو عدم توفر إعلانات حالياً.");
                 console.log("Ad error:", error);
             });
         });
