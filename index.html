@@ -117,10 +117,11 @@
     </div>
 
     <script>
-        let coins = 0;
-        let dollars = 0.00;
-        let adsLeftInBatch = 10;
-        let dailyAdsLeft = 70;
+        // استرجاع البيانات المحفوظة مسبقاً من ذاكرة المتصفح
+        let coins = parseInt(localStorage.getItem('saved_coins')) || 0;
+        let dollars = parseFloat(localStorage.getItem('saved_dollars')) || 0.00;
+        let adsLeftInBatch = localStorage.getItem('saved_batch') !== null ? parseInt(localStorage.getItem('saved_batch')) : 10;
+        let dailyAdsLeft = localStorage.getItem('saved_daily') !== null ? parseInt(localStorage.getItem('saved_daily')) : 70;
 
         let AdController = null;
         try {
@@ -136,9 +137,18 @@
             document.getElementById('usd-bal').innerText = dollars.toFixed(2);
             document.getElementById('ads-count').innerText = adsLeftInBatch;
             document.getElementById('daily-ads-count').innerText = dailyAdsLeft;
+
+            // حفظ البيانات تلقائياً في ذاكرة المتصفح عند كل تحديث للواجهة
+            localStorage.setItem('saved_coins', coins);
+            localStorage.setItem('saved_dollars', dollars);
+            localStorage.setItem('saved_batch', adsLeftInBatch);
+            localStorage.setItem('saved_daily', dailyAdsLeft);
         }
 
-        // ربط الأزرار مباشرة بدون انتظار DOMContentLoaded لضمان عملها الفوري في تليجرام
+        // تحديث الواجهة فور فتح التطبيق لعرض الرصيد المحفوظ
+        updateUI();
+
+        // زر مشاهدة الإعلانات
         document.getElementById("watch-ad-btn").addEventListener("click", () => {
             if (dailyAdsLeft <= 0) {
                 alert("لقد استنفدت الحد الأقصى (70 إعلاناً) لهذا اليوم.");
@@ -170,6 +180,7 @@
             });
         });
 
+        // زر التحويل
         document.getElementById("convert-btn").addEventListener("click", () => {
             if (coins < 4000) {
                 alert("رصيدك غير كافي! تحتاج إلى 4000 عملة على الأقل للتحويل.");
@@ -178,11 +189,12 @@
             let multiplier = Math.floor(coins / 4000);
             let addedUsd = multiplier * 0.04;
             coins -= multiplier * 4000;
-            dollars += addedUsv = addedUsd;
+            dollars += addedUsd;
             updateUI();
             alert("تم تحويل العملات إلى دولار بنجاح!");
         });
 
+        // زر السحب
         document.getElementById("withdraw-btn").addEventListener("click", () => {
             const method = document.getElementById('withdraw-method').value;
             const address = document.getElementById('withdraw-address').value.trim();
@@ -202,6 +214,7 @@
             updateUI();
         });
 
+        // زر الإحالة
         document.getElementById("copy-btn").addEventListener("click", () => {
             const linkText = document.getElementById('ref-link').innerText;
             navigator.clipboard.writeText(linkText).then(() => {
@@ -212,5 +225,6 @@
         });
     </script>
 </body>
-    </html>
+</html>
+
     
