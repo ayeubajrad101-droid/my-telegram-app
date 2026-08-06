@@ -123,18 +123,10 @@
         let dollars = parseFloat(localStorage.getItem('saved_dollars')) || 0.00;
         let dailyAdsLeft = localStorage.getItem('saved_daily') !== null ? parseInt(localStorage.getItem('saved_daily')) : 70;
 
-        // نظام فحص وتجديد الدفعة تلقائياً بعد مرور ساعة
-        let adsLeftInBatch = parseInt(localStorage.getItem('saved_batch'));
-        let batchTime = parseInt(localStorage.getItem('batch_time')) || 0;
-        let currentTime = Date.now();
-
-        if (isNaN(adsLeftInBatch) || (adsLeftInBatch <= 0 && currentTime - batchTime >= 3600000)) {
-            adsLeftInBatch = 10;
-            localStorage.setItem('saved_batch', 10);
-            localStorage.removeItem('batch_time');
-        } else if (isNaN(adsLeftInBatch)) {
-            adsLeftInBatch = 10;
-        }
+        // إعادة تعيين العداد فوراً للتجربة بدون انتظار
+        let adsLeftInBatch = 10;
+        localStorage.setItem('saved_batch', 10);
+        localStorage.removeItem('batch_time');
 
         let AdController = null;
         try {
@@ -160,18 +152,8 @@
         updateUI();
 
         document.getElementById("watch-ad-btn").addEventListener("click", () => {
-            // التحقق من انتهاء الدفعة والوقت المتبقي للساعة
             if (adsLeftInBatch <= 0) {
-                let savedTime = parseInt(localStorage.getItem('batch_time')) || Date.now();
-                let timeLeft = 3600000 - (Date.now() - savedTime);
-                if (timeLeft > 0) {
-                    let minutesLeft = Math.ceil(timeLeft / 60000);
-                    alert("لقد أتممت 10 إعلانات لهذه الدفعة. يرجى الانتظار " + minutesLeft + " دقيقة لتجديد الدفعة.");
-                    return;
-                } else {
-                    adsLeftInBatch = 10;
-                    localStorage.removeItem('batch_time');
-                }
+                adsLeftInBatch = 10;
             }
 
             if (dailyAdsLeft <= 0) {
@@ -189,14 +171,10 @@
                 dailyAdsLeft--;
                 coins += 400;
                 
-                if (adsLeftInBatch <= 0) {
-                    localStorage.setItem('batch_time', Date.now());
-                }
-                
                 updateUI();
                 alert("ممتاز! تم تأكيد مشاهدة الإعلان وحصلت على 400 عملة 🪙.");
             }).catch((error) => {
-                alert("خطأ في عرض الإعلان: قد يكون بسبب قيود النطاق أو الـ Block ID غير المفعّل على أجهزة الآخرين.");
+                alert("لم يتم إكمال الإعلان أو تم إغلاقه قبل النهاية.");
                 console.log("Ad error:", error);
             });
         });
