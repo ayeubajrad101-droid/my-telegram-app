@@ -72,14 +72,10 @@
         </div>
 
         <div class="card">
-            <button class="btn-secondary" onclick="convertToDollar()">تحويل إلى دولار ($)</button>
-        </div>
-
-        <div class="card">
             <h3>💳 سحب الأرباح</h3>
             <select><option>منصة باينانس (Binance ID)</option></select>
-            <input type="text" placeholder="أدخل معرف باينانس الخاص بك">
-            <button class="btn-secondary" style="margin-top: 12px;" onclick="alert('قريباً سيتم تفعيل السحب')">طلب السحب</button>
+            <input type="text" id="binanceId" placeholder="أدخل معرف باينانس الخاص بك">
+            <button class="btn-secondary" style="margin-top: 12px;" onclick="requestWithdrawal()">طلب السحب</button>
         </div>
     </div>
 
@@ -94,7 +90,7 @@
 
         function updateUI() {
             document.getElementById('balance').innerText = userBalance;
-            let dollars = (userBalance / 4000).toFixed(2);
+            let dollars = (userBalance / 100000).toFixed(2);
             document.getElementById('dollar').innerText = dollars;
         }
 
@@ -103,15 +99,20 @@
             
             let adLogs = JSON.parse(localStorage.getItem('ad_logs') || '[]');
             const now = Date.now();
+            
+            // تصفية السجلات للاحتفاظ فقط بإعلانات آخر 60 دقيقة بدقة
             adLogs = adLogs.filter(time => now - time < 3600000);
             
-            if (adLogs.length >= 15) {
+            if (adLogs.length >= 10) {
+                // حساب الوقت المتبقي بالدقائق بدقة تامة لتحديث الرسالة
+                const oldestAd = adLogs[0];
+                const remainingMinutes = Math.ceil((3600000 - (now - oldestAd)) / 60000);
                 statusDiv.style.color = "#ffcc00";
-                statusDiv.innerText = "⚠️ وصلت للحد الأقصى مؤقتاً.";
+                statusDiv.innerText = `⚠️ وصلت للحد الأقصى (10 إعلانات). انتظر ${remainingMinutes} دقيقة.`;
+                localStorage.setItem('ad_logs', JSON.stringify(adLogs));
                 return;
             }
 
-            // إضافة النقاط فوراً لضمان تجربة مستخدم سريعة
             userBalance += 400;
             localStorage.setItem('user_balance', userBalance);
             adLogs.push(now);
@@ -119,11 +120,20 @@
             updateUI();
             
             statusDiv.style.color = "#00ffcc";
-            statusDiv.innerText = "🎉 مبروك! تمت إضافة 400 عملة لرصيدك.";
+            statusDiv.innerText = `🎉 مبروك! تمت إضافة 400 عملة. (${10 - adLogs.length} محاولات متبقية)`;
         }
 
-        function convertToDollar() {
-            alert("تم تحديث حساب الأرباح بنجاح!");
+        function requestWithdrawal() {
+            const binanceId = document.getElementById('binanceId').value.trim();
+            if (!binanceId) {
+                alert("الرجاء إدخال معرف باينانس (Binance ID) أولاً!");
+                return;
+            }
+            if (userBalance < 100000) {
+                alert("الحد الأدنى للسحب هو 100,000 عملة (1 دولار)! رصيدك الحالي غير كافٍ.");
+                return;
+            }
+            alert("تم إرسال طلب السحب بنجاح إلى المعرف: " + binanceId);
         }
     </script>
 </body>
