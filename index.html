@@ -138,85 +138,79 @@
             document.getElementById('daily-ads-count').innerText = dailyAdsLeft;
         }
 
-        // ربط الأزرار برمجياً لمنع أي مشاكل في التفاعل داخل تيليجرام
-        document.addEventListener("DOMContentLoaded", () => {
+        // ربط الأزرار مباشرة بدون انتظار DOMContentLoaded لضمان عملها الفوري في تليجرام
+        document.getElementById("watch-ad-btn").addEventListener("click", () => {
+            if (dailyAdsLeft <= 0) {
+                alert("لقد استنفدت الحد الأقصى (70 إعلاناً) لهذا اليوم.");
+                return;
+            }
+            if (adsLeftInBatch <= 0) {
+                alert("لقد أتممت 10 إعلانات لهذه الدفعة. انتظر التجدد القادم!");
+                return;
+            }
+
+            if (!AdController) {
+                adsLeftInBatch--;
+                dailyAdsLeft--;
+                coins += 400;
+                updateUI();
+                alert("✨ [وضع التجربة] تمت محاكاة مشاهدة الإعلان بنجاح وحصلت على 400 عملة!");
+                return;
+            }
+
+            AdController.show().then((result) => {
+                adsLeftInBatch--;
+                dailyAdsLeft--;
+                coins += 400;
+                updateUI();
+                alert("ممتاز! تم تأكيد مشاهدة الإعلان وحصلت على 400 عملة 🪙.");
+            }).catch((error) => {
+                alert("لم يتم إكمال الإعلان أو حدث خطأ.");
+                console.log("Ad error:", error);
+            });
+        });
+
+        document.getElementById("convert-btn").addEventListener("click", () => {
+            if (coins < 4000) {
+                alert("رصيدك غير كافي! تحتاج إلى 4000 عملة على الأقل للتحويل.");
+                return;
+            }
+            let multiplier = Math.floor(coins / 4000);
+            let addedUsd = multiplier * 0.04;
+            coins -= multiplier * 4000;
+            dollars += addedUsv = addedUsd;
+            updateUI();
+            alert("تم تحويل العملات إلى دولار بنجاح!");
+        });
+
+        document.getElementById("withdraw-btn").addEventListener("click", () => {
+            const method = document.getElementById('withdraw-method').value;
+            const address = document.getElementById('withdraw-address').value.trim();
             
-            // زر الإعلانات
-            document.getElementById("watch-ad-btn").addEventListener("click", () => {
-                if (dailyAdsLeft <= 0) {
-                    alert("لقد استنفدت الحد الأقصى (70 إعلاناً) لهذا اليوم.");
-                    return;
-                }
-                if (adsLeftInBatch <= 0) {
-                    alert("لقد أتممت 10 إعلانات لهذه الدفعة. انتظر التجدد القادم!");
-                    return;
-                }
+            if (!address) {
+                alert("الرجاء إدخال معرف الحساب أو العنوان أولاً.");
+                return;
+            }
+            if (dollars < 0.08) {
+                alert("رصيدك من الدولار غير كافي للسحب حالياً (الحد الأدنى $0.08).");
+                return;
+            }
 
-                if (!AdController) {
-                    adsLeftInBatch--;
-                    dailyAdsLeft--;
-                    coins += 400;
-                    updateUI();
-                    alert("✨ [وضع التجربة] تمت محاكاة مشاهدة الإعلان بنجاح وحصلت على 400 عملة!");
-                    return;
-                }
+            alert("تم إرسال طلب السحب بنجاح عبر " + method + "!");
+            dollars = 0.00;
+            document.getElementById('withdraw-address').value = "";
+            updateUI();
+        });
 
-                AdController.show().then((result) => {
-                    adsLeftInBatch--;
-                    dailyAdsLeft--;
-                    coins += 400;
-                    updateUI();
-                    alert("ممتاز! تم تأكيد مشاهدة الإعلان وحصلت على 400 عملة 🪙.");
-                }).catch((error) => {
-                    alert("لم يتم إكمال الإعلان أو حدث خطأ.");
-                    console.log("Ad error:", error);
-                });
-            });
-
-            // زر التحويل
-            document.getElementById("convert-btn").addEventListener("click", () => {
-                if (coins < 4000) {
-                    alert("رصيدك غير كافي! تحتاج إلى 4000 عملة على الأقل للتحويل.");
-                    return;
-                }
-                let multiplier = Math.floor(coins / 4000);
-                let addedUsd = multiplier * 0.04;
-                coins -= multiplier * 4000;
-                dollars += addedUsd;
-                updateUI();
-                alert("تم تحويل العملات إلى دولار بنجاح!");
-            });
-
-            // زر السحب
-            document.getElementById("withdraw-btn").addEventListener("click", () => {
-                const method = document.getElementById('withdraw-method').value;
-                const address = document.getElementById('withdraw-address').value.trim();
-                
-                if (!address) {
-                    alert("الرجاء إدخال معرف الحساب أو العنوان أولاً.");
-                    return;
-                }
-                if (dollars < 0.08) {
-                    alert("رصيدك من الدولار غير كافي للسحب حالياً (الحد الأدنى $0.08).");
-                    return;
-                }
-
-                alert("تم إرسال طلب السحب بنجاح عبر " + method + "!");
-                dollars = 0.00;
-                document.getElementById('withdraw-address').value = "";
-                updateUI();
-            });
-
-            // زر الإحالة
-            document.getElementById("copy-btn").addEventListener("click", () => {
-                const linkText = document.getElementById('ref-link').innerText;
-                navigator.clipboard.writeText(linkText).then(() => {
-                    alert("تم نسخ رابط الإحالة بنجاح!");
-                }).catch(() => {
-                    alert("تعذر النسخ التلقائي.");
-                });
+        document.getElementById("copy-btn").addEventListener("click", () => {
+            const linkText = document.getElementById('ref-link').innerText;
+            navigator.clipboard.writeText(linkText).then(() => {
+                alert("تم نسخ رابط الإحالة بنجاح!");
+            }).catch(() => {
+                alert("تعذر النسخ التلقائي.");
             });
         });
     </script>
 </body>
-</html>
+    </html>
+    
