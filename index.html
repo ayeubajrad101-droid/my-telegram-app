@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Bot App</title>
-    <!-- استدعاء مكتبة الإعلانات الرسمية لكي يظهر الإعلان الحقيقي -->
+    <!-- استدعاء مكتبة الإعلانات الرسمية -->
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     <style>
         body {
@@ -119,13 +119,11 @@
     </div>
 
     <script>
-        // استرجاع البيانات المحفوظة من ذاكرة المتصفح
         let coins = parseInt(localStorage.getItem('saved_coins')) || 0;
         let dollars = parseFloat(localStorage.getItem('saved_dollars')) || 0.00;
         let adsLeftInBatch = localStorage.getItem('saved_batch') !== null ? parseInt(localStorage.getItem('saved_batch')) : 10;
         let dailyAdsLeft = localStorage.getItem('saved_daily') !== null ? parseInt(localStorage.getItem('saved_daily')) : 70;
 
-        // تهيئة الإعلانات الحقيقية
         let AdController = null;
         try {
             if (window.Adsgram && typeof window.Adsgram.init === 'function') {
@@ -141,7 +139,6 @@
             document.getElementById('ads-count').innerText = adsLeftInBatch;
             document.getElementById('daily-ads-count').innerText = dailyAdsLeft;
 
-            // حفظ البيانات فوراً لكي لا تضيع أبداً عند الخروج
             localStorage.setItem('saved_coins', coins);
             localStorage.setItem('saved_dollars', dollars);
             localStorage.setItem('saved_batch', adsLeftInBatch);
@@ -150,7 +147,7 @@
 
         updateUI();
 
-        // زر مشاهدة الإعلانات (يشغل الإعلان الحقيقي الآن)
+        // زر مشاهدة الإعلانات الحقيقية حصرياً
         document.getElementById("watch-ad-btn").addEventListener("click", () => {
             if (dailyAdsLeft <= 0) {
                 alert("لقد استنفدت الحد الأقصى (70 إعلاناً) لهذا اليوم.");
@@ -162,11 +159,10 @@
             }
 
             if (!AdController) {
-                alert("جاري تحميل نظام الإعلانات، يرجى المحاولة بعد قليل.");
+                alert("عذراً، لم يتم تحميل نظام الإعلانات. تأكد من اتصال الإنترنت أو صحة الـ Block ID.");
                 return;
             }
 
-            // تشغيل الإعلان الحقيقي
             AdController.show().then((result) => {
                 adsLeftInBatch--;
                 dailyAdsLeft--;
@@ -174,12 +170,11 @@
                 updateUI();
                 alert("ممتاز! تم تأكيد مشاهدة الإعلان وحصلت على 400 عملة 🪙.");
             }).catch((error) => {
-                alert("لم يتم إكمال الإعلان أو تم إغلاقه قبل النهاية.");
+                alert("لم يتم إكمال الإعلان أو حدث خطأ في العرض.");
                 console.log("Ad error:", error);
             });
         });
 
-        // زر التحويل
         document.getElementById("convert-btn").addEventListener("click", () => {
             if (coins < 4000) {
                 alert("رصيدك غير كافي! تحتاج إلى 4000 عملة على الأقل للتحويل.");
@@ -193,7 +188,6 @@
             alert("تم تحويل العملات إلى دولار بنجاح!");
         });
 
-        // زر السحب
         document.getElementById("withdraw-btn").addEventListener("click", () => {
             const method = document.getElementById('withdraw-method').value;
             const address = document.getElementById('withdraw-address').value.trim();
@@ -213,7 +207,6 @@
             updateUI();
         });
 
-        // زر الإحالة
         document.getElementById("copy-btn").addEventListener("click", () => {
             const linkText = document.getElementById('ref-link').innerText;
             navigator.clipboard.writeText(linkText).then(() => {
