@@ -121,8 +121,20 @@
     <script>
         let coins = parseInt(localStorage.getItem('saved_coins')) || 0;
         let dollars = parseFloat(localStorage.getItem('saved_dollars')) || 0.00;
-        let adsLeftInBatch = localStorage.getItem('saved_batch') !== null ? parseInt(localStorage.getItem('saved_batch')) : 10;
         let dailyAdsLeft = localStorage.getItem('saved_daily') !== null ? parseInt(localStorage.getItem('saved_daily')) : 70;
+
+        // نظام فحص وتجديد الدفعة تلقائياً بعد مرور ساعة
+        let adsLeftInBatch = parseInt(localStorage.getItem('saved_batch'));
+        let batchTime = parseInt(localStorage.getItem('batch_time')) || 0;
+        let currentTime = Date.now();
+
+        if (isNaN(adsLeftInBatch) || (adsLeftInBatch <= 0 && currentTime - batchTime >= 3600000)) {
+            adsLeftInBatch = 10;
+            localStorage.setItem('saved_batch', 10);
+            localStorage.removeItem('batch_time');
+        } else if (isNaN(adsLeftInBatch)) {
+            adsLeftInBatch = 10;
+        }
 
         let AdController = null;
         try {
@@ -147,19 +159,28 @@
 
         updateUI();
 
-        // زر مشاهدة الإعلانات الحقيقية حصرياً
         document.getElementById("watch-ad-btn").addEventListener("click", () => {
+            // التحقق من انتهاء الدفعة والوقت المتبقي للساعة
+            if (adsLeftInBatch <= 0) {
+                let savedTime = parseInt(localStorage.getItem('batch_time')) || Date.now();
+                let timeLeft = 3600000 - (Date.now() - savedTime);
+                if (timeLeft > 0) {
+                    let minutesLeft = Math.ceil(timeLeft / 60000);
+                    alert("لقد أتممت 10 إعلانات لهذه الدفعة. يرجى الانتظار " + minutesLeft + " دقيقة لتجديد الدفعة.");
+                    return;
+                } else {
+                    adsLeftInBatch = 10;
+                    localStorage.removeItem('batch_time');
+                }
+            }
+
             if (dailyAdsLeft <= 0) {
                 alert("لقد استنفدت الحد الأقصى (70 إعلاناً) لهذا اليوم.");
                 return;
             }
-            if (adsLeftInBatch <= 0) {
-                alert("لقد أتممت 10 إعلانات لهذه الدفعة. انتظر التجدد القادم!");
-                return;
-            }
 
             if (!AdController) {
-                alert("عذراً، لم يتم تحميل نظام الإعلانات. تأكد من اتصال الإنترنت أو صحة الـ Block ID.");
+                alert("خطأ في تحميل نظام الإعلانات. تأكد من فتح التطبيق عبر تيليجرام بشكل صحيح.");
                 return;
             }
 
@@ -167,10 +188,15 @@
                 adsLeftInBatch--;
                 dailyAdsLeft--;
                 coins += 400;
+                
+                if (adsLeftInBatch <= 0) {
+                    localStorage.setItem('batch_time', Date.now());
+                }
+                
                 updateUI();
                 alert("ممتاز! تم تأكيد مشاهدة الإعلان وحصلت على 400 عملة 🪙.");
             }).catch((error) => {
-                alert("لم يتم إكمال الإعلان أو حدث خطأ في العرض.");
+                alert("خطأ في عرض الإعلان: قد يكون بسبب قيود النطاق أو الـ Block ID غير المفعّل على أجهزة الآخرين.");
                 console.log("Ad error:", error);
             });
         });
