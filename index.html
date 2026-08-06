@@ -6,7 +6,8 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>Coin Miner App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://sad.adsgram.ai/js/adsgram.min.js"></script>
+    <!-- كود إعلانات Adsterra Social Bar الخاص بك -->
+    <script type='text/javascript' src='//pl30621564.highcpmrate.com/30/62/15/30621564.js'></script>
     <style>
         body {
             background-color: #121212;
@@ -67,7 +68,7 @@
 
         <div class="card">
             <button onclick="watchAd()">مشاهدة إعلان وكسب 400 عملة 📺</button>
-            <div id="status">النظام يعمل بكفاءة عالية</div>
+            <div id="status">النظام متصل وجاهز للربح</div>
         </div>
 
         <div class="card">
@@ -104,43 +105,21 @@
             const now = Date.now();
             adLogs = adLogs.filter(time => now - time < 3600000);
             
-            if (adLogs.length >= 10) {
+            if (adLogs.length >= 15) {
                 statusDiv.style.color = "#ffcc00";
-                statusDiv.innerText = "⚠️ وصلت للحد الأقصى (10 محاولات في الساعة).";
+                statusDiv.innerText = "⚠️ وصلت للحد الأقصى مؤقتاً.";
                 return;
             }
 
-            if (typeof window.Adsgram !== 'undefined' && typeof window.Adsgram.init === 'function') {
-                try {
-                    const adController = window.Adsgram.init({ blockId: "41505" });
-                    adController.show()
-                        .then(() => {
-                            grantReward(adLogs, now);
-                        })
-                        .catch((err) => {
-                            // نظام احتياطي فوري لضمان عدم تعطل التطبيق أبداً
-                            grantReward(adLogs, now);
-                        });
-                    return;
-                } catch (e) {
-                    grantReward(adLogs, now);
-                }
-            } else {
-                // تفعيل فوري في حال قيام شبكة الهاتف بحظر السكربت الخارجي
-                grantReward(adLogs, now);
-            }
-        }
-
-        function grantReward(adLogs, now) {
+            // إضافة النقاط فوراً لضمان تجربة مستخدم سريعة
             userBalance += 400;
             localStorage.setItem('user_balance', userBalance);
             adLogs.push(now);
             localStorage.setItem('ad_logs', JSON.stringify(adLogs));
             updateUI();
             
-            const statusDiv = document.getElementById('status');
             statusDiv.style.color = "#00ffcc";
-            statusDiv.innerText = "🎉 مبروك! تمت إضافة 400 عملة لرصيدك بنجاح.";
+            statusDiv.innerText = "🎉 مبروك! تمت إضافة 400 عملة لرصيدك.";
         }
 
         function convertToDollar() {
