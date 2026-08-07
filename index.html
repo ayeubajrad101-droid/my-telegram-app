@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coin Miner App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- كود إعلانات Adexium بمعرّف التنسيب الكامل -->
+    <script src="https://adexium.io/sdk.js" data-wid="bf93723c-311b-4879-a88e-ee06a37904f2"></script>
     <style>
         body {
             background-color: #121212;
@@ -112,7 +114,7 @@
                 <option value="Binance ID">منصة باينانس (Binance ID)</option>
                 <option value="Payeer">باير (Payeer)</option>
             </select>
-            <input type="text" id="accountInput" placeholder="أدخل معرف باينانس الخاص بك">
+            <input type="text" id="accountInput" placeholder="أدخل معرف الحساب الخاص بك">
             <button class="btn" onclick="requestWithdrawal()">طلب السحب</button>
         </div>
     </div>
@@ -121,7 +123,7 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // التهيئة بقيم صفرية أو استرجاعها من التخزين المحلي
+        // البدء من الصفر تماماً
         let coins = parseInt(localStorage.getItem('bot_coins')) || 0;
         let usd = parseFloat(localStorage.getItem('bot_usd')) || 0.00;
 
@@ -135,12 +137,16 @@
         }
 
         function watchAd() {
-            // إضافة 400 عملة لكل مشاهدة إعلان
+            // استدعاء دالة الإعلان الخاصة بالمنصة إن توفرت
+            if (typeof showAdexiumAd === 'function') {
+                showAdexiumAd();
+            } else if (window.Adexium && typeof window.Adexium.show === 'function') {
+                window.Adexium.show();
+            }
+
+            // إضافة 400 عملة للمستخدم وتحديث الواجهة
             coins += 400;
             updateUI();
-            
-            // فتح رابط إعلان أستيرا الجديد
-            window.open('Https://www.effectivecpmnetwork.com/jdz40te0n?key=fbfc1fdd65c16f9a64df3a018267b1d5', '_blank');
         }
 
         function convertToUsd() {
@@ -181,7 +187,7 @@
             usd = 0;
             updateUI();
 
-            // إرسال تفاصيل السحب للبوت الخاص بك عبر التيليجرام
+            // إرسال تفاصيل السحب للبوت عبر التيليجرام
             let withdrawalData = {
                 action: "withdrawal",
                 method: method,
