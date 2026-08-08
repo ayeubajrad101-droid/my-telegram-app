@@ -4,9 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coin Miner App</title>
+    <!-- تيليجرام ويب أب -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- كود إعلانات Adexium بمعرّف التنسيب الكامل -->
-    <script src="https://adexium.io/sdk.js" data-wid="bf93723c-311b-4879-a88e-ee06a37904f2"></script>
+    
+    <!-- سكربت الإعلانات الرسمي من Adexium -->
+    <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
+    <script type="text/javascript">
+        let myAdexiumWidget;
+        document.addEventListener('DOMContentLoaded', () => {
+            myAdexiumWidget = new AdexiumWidget({
+                wid: 'bf93723c-311b-4879-a88e-ee06a37904f2',
+                adFormat: 'interstitial'
+            });
+        });
+    </script>
+
     <style>
         body {
             background-color: #121212;
@@ -79,17 +91,12 @@
             margin-top: 8px;
             margin-bottom: 12px;
         }
-        .status-msg {
-            font-size: 13px;
-            color: #00ffcc;
-            margin-top: 8px;
-        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- قسم الرصيد الحالي -->
+        <!-- قسم الرصيد -->
         <div class="card">
             <div class="balance-title">رصيدك الحالي</div>
             <div class="balance-coins" id="coinsDisplay">0 عملة</div>
@@ -99,15 +106,14 @@
         <!-- زر مشاهدة الإعلان -->
         <div class="card">
             <button class="btn" onclick="watchAd()">📺 مشاهدة إعلان وكسب 400 عملة</button>
-            <div class="status-msg">✅ البوت جاهز للعمل وكسب الأرباح بنجاح.</div>
         </div>
 
-        <!-- زر التحويل إلى دولار -->
+        <!-- التحويل إلى دولار -->
         <div class="card" style="padding: 15px;">
             <button class="btn btn-secondary" onclick="convertToUsd()">تحويل إلى دولار ($)</button>
         </div>
 
-        <!-- قسم سحب الأرباح -->
+        <!-- سحب الأرباح -->
         <div class="card">
             <div class="balance-title" style="text-align: right;">💳 سحب الأرباح</div>
             <select id="withdrawMethod">
@@ -123,7 +129,6 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // البدء من الصفر تماماً
         let coins = parseInt(localStorage.getItem('bot_coins')) || 0;
         let usd = parseFloat(localStorage.getItem('bot_usd')) || 0.00;
 
@@ -137,14 +142,20 @@
         }
 
         function watchAd() {
-            // استدعاء دالة الإعلان الخاصة بالمنصة إن توفرت
-            if (typeof showAdexiumAd === 'function') {
-                showAdexiumAd();
-            } else if (window.Adexium && typeof window.Adexium.show === 'function') {
-                window.Adexium.show();
+            try {
+                if (myAdexiumWidget && typeof myAdexiumWidget.show === 'function') {
+                    myAdexiumWidget.show();
+                } else if (typeof AdexiumWidget !== 'undefined') {
+                    const tempWidget = new AdexiumWidget({
+                        wid: 'bf93723c-311b-4879-a88e-ee06a37904f2',
+                        adFormat: 'interstitial'
+                    });
+                    tempWidget.show();
+                }
+            } catch (e) {
+                console.log("Ad error:", e);
             }
 
-            // إضافة 400 عملة للمستخدم وتحديث الواجهة
             coins += 400;
             updateUI();
         }
@@ -154,15 +165,12 @@
                 alert('عذراً، يجب أن تمتلك 3200 عملة على الأقل للتحويل!');
                 return;
             }
-            
-            // كل 3200 عملة تساوي 0.02 دولار
             let units = Math.floor(coins / 3200);
             let earnedUsd = units * 0.02;
             let deductedCoins = units * 3200;
 
             coins -= deductedCoins;
             usd += earnedUsd;
-            
             updateUI();
             alert('تم تحويل ' + deductedCoins + ' عملة بنجاح إلى ' + earnedUsd.toFixed(2) + '$');
         }
@@ -175,19 +183,15 @@
                 alert('الرجاء إدخال معرف الحساب الخاص بك بشكل صحيح!');
                 return;
             }
-
             if (usd <= 0) {
                 alert('رصيدك الحالي من الدولار هو 0، لا يمكنك السحب حالياً!');
                 return;
             }
 
             let requestedAmount = usd;
-
-            // خصم الرصيد فوراً عند طلب السحب
             usd = 0;
             updateUI();
 
-            // إرسال تفاصيل السحب للبوت عبر التيليجرام
             let withdrawalData = {
                 action: "withdrawal",
                 method: method,
@@ -195,20 +199,19 @@
                 amount: requestedAmount.toFixed(2)
             };
 
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            if (tg.initDataUnsafe && tg.initDataUnsave.user) {
                 withdrawalData.user_id = tg.initDataUnsafe.user.id;
                 withdrawalData.username = tg.initDataUnsafe.user.username;
             }
 
             try {
                 tg.sendData(JSON.stringify(withdrawalData));
-            } catch (e) {
-                console.log("Data sent fallback");
-            }
+            } catch (e) {}
 
-            alert('تم تقديم طلب السحب بقيمة $' + requestedAmount.toFixed(2) + ' بنجاح وتم خصم المبلغ من رصيدك!');
+            alert('تم تقديم طلب السحب بقيمة $' + requestedAmount.toFixed(2) + ' بنجاح!');
             document.getElementById('accountInput').value = '';
         }
     </script>
 </body>
-</html>
+            </html>
+                
