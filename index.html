@@ -4,21 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coin Miner App</title>
-    <!-- تيليجرام ويب أب -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    <!-- سكربت الإعلانات الرسمي من Adexium -->
-    <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
-    <script type="text/javascript">
-        let myAdexiumWidget;
-        document.addEventListener('DOMContentLoaded', () => {
-            myAdexiumWidget = new AdexiumWidget({
-                wid: 'bf93723c-311b-4879-a88e-ee06a37904f2',
-                adFormat: 'interstitial'
-            });
-        });
-    </script>
-
     <style>
         body {
             background-color: #121212;
@@ -142,20 +128,17 @@
         }
 
         function watchAd() {
-            try {
-                if (myAdexiumWidget && typeof myAdexiumWidget.show === 'function') {
-                    myAdexiumWidget.show();
-                } else if (typeof AdexiumWidget !== 'undefined') {
-                    const tempWidget = new AdexiumWidget({
-                        wid: 'bf93723c-311b-4879-a88e-ee06a37904f2',
-                        adFormat: 'interstitial'
-                    });
-                    tempWidget.show();
-                }
-            } catch (e) {
-                console.log("Ad error:", e);
+            // رابط أدسترادا المباشر المدمج
+            const adsterraLink = "https://www.effectivecpmnetwork.com/jdz40te0n?key=fbfc1fdd65c16f9a64df3a018267b1d5";
+
+            // فتح الإعلان في تبويب جديد أو عبر تيليجرام
+            if (tg && tg.openLink) {
+                tg.openLink(adsterraLink);
+            } else {
+                window.open(adsterraLink, '_blank');
             }
 
+            // إضافة المكافأة للمستخدم فوراً
             coins += 400;
             updateUI();
         }
@@ -199,7 +182,7 @@
                 amount: requestedAmount.toFixed(2)
             };
 
-            if (tg.initDataUnsafe && tg.initDataUnsave.user) {
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
                 withdrawalData.user_id = tg.initDataUnsafe.user.id;
                 withdrawalData.username = tg.initDataUnsafe.user.username;
             }
@@ -213,5 +196,4 @@
         }
     </script>
 </body>
-    </html>
-    
+</html>
